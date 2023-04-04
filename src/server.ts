@@ -6,7 +6,7 @@ import swaggerUi from "swagger-ui-express"
 import mongoose from "mongoose"
 
 import authRoutes from "./controllers/auth";
-import productsRoutes from "./controllers/products";
+import accountingRoutes from "./controllers/accounting";
 import financeRoutes from "./controllers/finance";
 
 import swaggerDocs from "./docs/swagger.json"
@@ -24,7 +24,7 @@ app.get("/terms", (request, response) => {
 });
 
 app.use("/auth", authRoutes);
-app.use("/products", productsRoutes);
+app.use("/accounting", accountingRoutes);
 app.use("/finance", financeRoutes);
 
 const DB_USER = process.env.DB_USER

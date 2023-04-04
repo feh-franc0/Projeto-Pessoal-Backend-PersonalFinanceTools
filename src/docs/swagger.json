@@ -1,26 +1,100 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "API de manipulação de produtos",
-    "description": "Essa API tem como objetivo a manipulação dos produtos",
+    "title": "API-Person Finance Tools",
+    "description": "Essa API tem como objetivo disponibilizar rotas para gestao de finanças",
     "termsOfService": "http://localhost:3000/terms",
     "contact": {
-      "email": "dani.leao89@gmail.com"
+      "email": "fernandofv1110@gmail.com"
     },
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "servers": [
     {
-      "url": "http://localhost:3000/v1",
-      "description": "API de test"
+      "url": "http://localhost:3000/",
+      "description": "API-BETA Personal Finance Tools"
     }
   ],
   "paths": {
-    "/products": {
+    "/auth/login": {
       "post": {
-        "summary": "Cadastro de produto",
-        "description": "Essa rota será responsável por cadastrar um novo produto",
-        "tags": ["Products"],
+        "summary": "Faça login na sua conta",
+        "description": "entre na sua conta para receber seu token de acesso",
+        "tags": ["auth"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Login"
+              },
+              "examples": {
+                "product": {
+                  "value": {
+                    "email": "fe@gmail.com", 
+                    "password": "123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "404": {
+            "description": "Not Found"
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Login"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "summary": "Cadastre uma nova conta",
+        "description": "Registre uma nova conta para poder logar na conta e ter seu token de acesso",
+        "tags": ["auth"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Register"
+              },
+              "examples": {
+                "product": {
+                  "value": {
+                    "name": "fe", 
+                    "email": "fer@gmail.com", 
+                    "password": "123"	, 
+                    "confirmpassword": "123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "422": {
+            "description": "Unprocessable Entity"
+          },
+          "201": {
+            "description": "Created"
+          }
+        }
+      }
+    },
+    "/accounting": {
+      "post": {
+        "summary": "Cadastro de recebimento/pagamentos",
+        "description": "Essa rota será responsável por cadastrar um recebimento(earn) ou uma retirada(spend)",
+        "tags": ["accounting"],
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "content": {
@@ -31,9 +105,9 @@
               "examples": {
                 "product": {
                   "value": {
-                    "name": "Mouse USB",
-                    "description": "Mouse USB RGB",
-                    "price": 300
+                    "name": "salario",
+                    "earnOrSpend": "earn",
+                    "price": 2200
                   }
                 }
               }
@@ -61,11 +135,12 @@
         }
       }
     },
-    "/products/all": {
+    "/accounting/all": {
       "get": {
-        "description": "Busca todos os produto",
-        "summary": "Busca todos os produto",
-        "tags": ["Products"],
+        "description": "Busca o extrato da conta",
+        "summary": "Lista com os itens da conta referente a ganho e gastos",
+        "tags": ["accounting"],
+        "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
             "description": "OK",
@@ -83,29 +158,20 @@
         }
       }
     },
-    "/products/findByName": {
+    "/accounting/summary": {
       "get": {
-        "description": "Busca de um produto pelo nome",
-        "summary": "Busca de um produto pelo nome",
-        "tags": ["Products"],
-        "parameters": [
-          {
-            "name": "name",
-            "in": "query",
-            "description": "Nome do produto para busca",
-            "required": true
-          }
-        ],
+        "description": "resumo sobre a conta",
+        "summary": " ira trazer o total de ganhos, total de gastos e o saldo atual  ",
+        "tags": ["accounting"],
+        "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Product"
-                  }
+                  "type": "object",
+                  "$ref": "#/components/schemas/Summary"
                 }
               }
             }
@@ -113,16 +179,17 @@
         }
       }
     },
-    "/products/{id}": {
+    "/accounting/{id}": {
       "get": {
-        "description": "Busca de um produto pelo id",
-        "summary": "Busca de um produto pelo id",
-        "tags": ["Products"],
+        "description": "Busca ganho ou retirada pelo id",
+        "summary": "Busca uma informacao de despesa ou lucro pelo id",
+        "tags": ["accounting"],
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "Nome do produto pelo ID",
+            "description": "ID do item",
             "required": true
           }
         ],
@@ -143,7 +210,7 @@
       "put": {
         "description": "Alterar um produto pelo id",
         "summary": "Alterar um produto pelo id",
-        "tags": ["Products"],
+        "tags": ["accounting"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
@@ -162,9 +229,9 @@
               "examples": {
                 "product": {
                   "value": {
-                    "name": "Mouse USB sem fio",
-                    "description": "Mouse USB RGB sem fio",
-                    "price": 450
+                    "name": "salary",
+                    "earnOrSpend": "earn",
+                    "price": 4200
                   }
                 }
               }
@@ -188,7 +255,7 @@
       "delete": {
         "description": "Deletar um produto pelo id",
         "summary": "Deletar um produto pelo id",
-        "tags": ["Products"],
+        "tags": ["accounting"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
@@ -217,6 +284,233 @@
           }
         }
       }
+    },
+    "/finance/cdi": {
+      "get": {
+        "description": "Busca CDI atual",
+        "summary": "exibe o valor do CDI atual",
+        "tags": ["finance"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "data": {
+                            "type": "string",
+                            "format": "date"
+                          },
+                          "valor": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/finance/ipca": {
+      "get": {
+        "description": "Busca IPCA atual",
+        "summary": "exibe o valor do IPCA atual",
+        "tags": ["finance"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "data": {
+                            "type": "string",
+                            "format": "date"
+                          },
+                          "valor": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/finance/selic": {
+      "get": {
+        "description": "Busca SELIC atual",
+        "summary": "exibe o valor do SELIC atual",
+        "tags": ["finance"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "data": {
+                            "type": "string",
+                            "format": "date"
+                          },
+                          "valor": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/finance/stocks": {
+      "get": {
+        "description": "Busca SELIC atual",
+        "summary": "exibe o valor do SELIC atual",
+        "tags": ["finance"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "coluna": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "coluna": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "dados": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Papel": {
+                            "type": "string"
+                          },
+                          "Cotação": {
+                            "type": "string"
+                          },
+                          "PsobreL": {
+                            "type": "string"
+                          },
+                          "PsobreVP": {
+                            "type": "string"
+                          },
+                          "PSR": {
+                            "type": "string"
+                          },
+                          "DivYield": {
+                            "type": "string"
+                          },
+                          "PsobreAtivo": {
+                            "type": "string"
+                          },
+                          "PsobreCapGiro": {
+                            "type": "string"
+                          },
+                          "PsobreEBIT": {
+                            "type": "string"
+                          },
+                          "PsobreAtivCircLiq": {
+                            "type": "string"
+                          },
+                          "EVsobreEBIT": {
+                            "type": "string"
+                          },
+                          "EVsobreEBITDA": {
+                            "type": "string"
+                          },
+                          "MrgEbit": {
+                            "type": "string"
+                          },
+                          "MrgLíq": {
+                            "type": "string"
+                          },
+                          "LiqCorr": {
+                            "type": "string"
+                          },
+                          "ROIC": {
+                            "type": "string"
+                          },
+                          "ROE": {
+                            "type": "string"
+                          },
+                          "Liq2meses": {
+                            "type": "string"
+                          },
+                          "PatrimLíq": {
+                            "type": "string"
+                          },
+                          "DívBrutsobrePatrim": {
+                            "type": "string"
+                          },
+                          "CrescRec5a": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -227,13 +521,55 @@
           "name": {
             "type": "string"
           },
-          "description": {
+          "earnOrSpend": {
             "type": "string"
           },
           "price": {
             "type": "number"
           },
           "id": {
+            "type": "string"
+          }
+        }
+      },
+      "Summary": {
+        "type": "object",
+        "properties": {
+          "totalEarn": {
+            "type": "number"
+          },
+          "totalSpend": {
+            "type": "number"
+          },
+          "price": {
+            "type": "number"
+          }
+        }
+      },
+      "Login": {
+        "type": "object",
+        "properties": {
+          "msg": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          }
+        }
+      },
+      "Register": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "confirmpassword": {
             "type": "string"
           }
         }
@@ -248,3 +584,5 @@
     }
   }
 }
+
+
