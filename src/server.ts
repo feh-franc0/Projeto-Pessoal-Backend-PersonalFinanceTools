@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express from "express";
+import cors from 'cors';
 import swaggerUi from "swagger-ui-express"
 import mongoose from "mongoose"
 
@@ -12,6 +13,8 @@ import financeRoutes from "./controllers/finance";
 import swaggerDocs from "./docs/swagger.json"
 
 const app = express();
+
+app.use(cors());
 
 app.use(express.json());
 
