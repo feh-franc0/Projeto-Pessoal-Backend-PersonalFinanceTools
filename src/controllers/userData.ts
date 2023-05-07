@@ -2,7 +2,9 @@ import express from "express";
 const router = express.Router();
 import { v4 as uuid } from "uuid";
 import { ensuredAuthenticated } from "../middleware/middleware";
+import bcrypt from "bcrypt"
 import { UserModel } from "../models/User";
+import jwt from "jsonwebtoken"
 
 interface IAccountItemSchema {
   name: { type: String; required: true };
@@ -40,20 +42,105 @@ router.get("/:id", async (request, response) => {
   }
 });
 
-router.post("/", async (request, response) => {
-  const { name, email, password } = request.body;
+router.post("/register", async (request, response) => {
+  const { name, email, password, confirmpassword } = request.body;
+
+  if (!name) {
+    return response
+      .status(422)
+      .json({ msg: "Preencha todas as informações(name)" });
+  }
+
+  if (!email) {
+    return response
+      .status(422)
+      .json({ msg: "Preencha todas as informações(email)" });
+  }
+
+  if (!password) {
+    return response
+      .status(422)
+      .json({ msg: "Preencha todas as informações(password)" });
+  }
+
+  if (password !== confirmpassword) {
+    return response.status(422).json({ msg: "As senhas não conferem" });
+  }
+
+  const emailExists = await UserModel.findOne({ email: email });
+  console.log(emailExists);
+
+  if (emailExists) {
+    return response.status(422).json({ msg: "Email já existente!" });
+  }
+
+  //* create password
+  const salt = await bcrypt.genSalt(12);
+  const passwordHash = await bcrypt.hash(password, salt);
 
   console.log(request.body);
 
-  const product: any = {
+  //* create user
+  const user: any = {
     name,
     email,
-    password,
+    password: passwordHash,
   };
 
-  //* criando dados
-  await UserModel.create(product);
-  response.status(201).json({ message: "Acessou a rota POST /user" });
+  try {
+    //* criando dados
+    await UserModel.create(user);
+    response.status(201).json({ message: "Acessou a rota POST /user" });
+  } catch (error) {
+    response.status(500).json({ msg: error });
+  }
+});
+
+router.post("/login", async (request, response) => {
+  const {email, password} = request.body
+
+  if(!email) {
+    return response.status(422).json({msg: 'O email é obrigatório!'})
+  }
+
+  if(!password) {
+    return response.status(422).json({msg: 'A senha é obrigatória!'})
+  }
+
+  //* Check if user exists
+  const user = await UserModel.findOne({ email: email })
+  console.log(user)
+
+  if(!user) {
+    return response.status(404).json({ msg: 'Usuário não encontrado!' })
+  }
+
+  //* check if password match
+  const checkPassword = await bcrypt.compare(password, user.password)
+
+  if(!checkPassword) {
+    return response.status(422).json({ msg: 'Senha inválida!' })
+  }
+
+  try {
+    const secret: string = process.env.SECRET!
+
+    const token = jwt.sign(
+      {
+      id: user._id
+      },
+      secret
+    )
+
+    response.status(200).json(
+      {
+        msg: "Autenticação realizada com sucesso!", 
+        token: token
+      }
+    )
+  } catch (error) {
+    response.status(500).json({ msg: error });
+  }
 });
 
 router.put("/:id", async (request, response) => {
