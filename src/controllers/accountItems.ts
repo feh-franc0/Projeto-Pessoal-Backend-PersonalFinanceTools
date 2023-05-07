@@ -24,6 +24,46 @@ router.get("/:userId", async (req, res) => {
   }
 });
 
+router.get("/summary/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      res.status(404).send({ message: "User not found" });
+      return;
+    }
+
+    const transactions = user.accountItems;
+
+    const totalEarn = transactions.reduce((acc, transaction) => {
+      if (transaction.earnOrSpend === "earn") {
+        return acc + transaction.price;
+      }
+      return acc;
+    }, 0);
+
+    const totalSpend = transactions.reduce((acc, transaction) => {
+      if (transaction.earnOrSpend === "spend") {
+        return acc - transaction.price;
+      }
+      return acc;
+    }, 0);
+
+    console.log(`Total de ganhos: R$${totalEarn}`);
+    console.log(`Total de gastos: R$${totalSpend}`);
+
+    const summary = totalEarn + totalSpend;
+
+    return res.json({
+      totalEarn: totalEarn,
+      totalSpend: totalSpend,
+      summary: summary,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error });
+  }
+});
+
 router.post("/:userId", async (req, res) => {
   const userId = req.params.userId;
   const { name, earnOrSpend, price }: IAccountItem = req.body;
