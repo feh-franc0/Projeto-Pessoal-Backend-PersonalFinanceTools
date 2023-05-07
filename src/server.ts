@@ -8,6 +8,8 @@ import mongoose from "mongoose"
 
 import authRoutes from "./controllers/auth";
 import accountingRoutes from "./controllers/accounting";
+import userRoutes from "./controllers/userData";
+import accountItemsRoutes from "./controllers/accountItems";
 import financeRoutes from "./controllers/finance";
 
 import swaggerDocs from "./docs/swagger.json"
@@ -26,6 +28,8 @@ app.get("/terms", (request, response) => {
   });
 });
 
+app.use("/user", userRoutes);
+app.use("/accountItems", accountItemsRoutes);
 app.use("/auth", authRoutes);
 app.use("/accounting", accountingRoutes);
 app.use("/finance", financeRoutes);
